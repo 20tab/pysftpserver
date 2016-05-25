@@ -25,24 +25,25 @@ setup(
     tests_require=['nose', 'paramiko'],
 
     extras_require={
-        'pysftpproxy': ["paramiko", ],
+        'pysftpproxy': ['paramiko'],
+        'urlrequesthook': ['requests'],
     },
 
-    keywords=["pysftpserver", "sftp", "openssh", "ssh", 'jail'],
+    keywords=['pysftpserver', 'sftp', 'openssh', 'ssh', 'jail'],
     classifiers=[
-        "Programming Language :: Python",
-        "Programming Language :: Python :: 3",
-        "Development Status :: 6 - Mature",
-        "Environment :: Other Environment",
-        "Intended Audience :: Developers",
-        "Intended Audience :: End Users/Desktop",
-        "Intended Audience :: Information Technology",
-        "License :: OSI Approved :: MIT License",
-        "Operating System :: OS Independent",
-        "Topic :: System :: Shells",
-        "Topic :: System :: System Shells",
-        "Topic :: Internet :: File Transfer Protocol (FTP)",
-        "Topic :: Utilities"
+        'Programming Language :: Python',
+        'Programming Language :: Python :: 3',
+        'Development Status :: 6 - Mature',
+        'Environment :: Other Environment',
+        'Intended Audience :: Developers',
+        'Intended Audience :: End Users/Desktop',
+        'Intended Audience :: Information Technology',
+        'License :: OSI Approved :: MIT License',
+        'Operating System :: OS Independent',
+        'Topic :: System :: Shells',
+        'Topic :: System :: System Shells',
+        'Topic :: Internet :: File Transfer Protocol (FTP)',
+        'Topic :: Utilities'
     ],
 
     zip_safe=False,

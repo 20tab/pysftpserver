@@ -3,10 +3,9 @@ The server.
 Handle requests, deliver them to the storage and then return the status.
 
 Python 2/3 compatibility:
-    pysftpserver natively speaks bytes.
-    So make sure to correctly handle them, specifically in Python 3.
-    In addition, please note that arguments passed to the storage are in bytes
-    too.
+    pysftpserver natively speaks bytes. Make sure to correctly handle them,
+    specifically in Python 3. Please note that arguments passed to the storage
+    are bytes too.
 """
 
 import errno
@@ -144,6 +143,34 @@ class SFTPServer(object):
         if handle_id in self.files:
             return self.files[handle_id], False
         return None, None
+
+    @staticmethod
+    def get_explicit_flags(self, flags):
+        """Convert a single file opening flags value to a list of human
+        readable abbreviations.
+
+        Args:
+            flags (int): The flags integer value.
+
+        Returns:
+            set: A set of strings (e.g. 'RDONLY', 'APPEND').
+        """
+        explicit_flags = set()
+        if flags & SSH2_FXF_READ and flags & SSH2_FXF_WRITE:
+            explicit_flags.add('RDWR')
+        elif flags & SSH2_FXF_READ:
+            explicit_flags.add('RDONLY')
+        elif flags & SSH2_FXF_WRITE:
+            explicit_flags.add('WRONLY')
+        if flags & SSH2_FXF_APPEND:
+            explicit_flags.add('APPEND')
+        if flags & SSH2_FXF_CREAT:
+            explicit_flags.add('CREAT')
+        if flags & SSH2_FXF_TRUNC and flags & SSH2_FXF_CREAT:
+            explicit_flags.add('TRUNC')
+        if flags & SSH2_FXF_EXCL and flags & SSH2_FXF_CREAT:
+            explicit_flags.add('EXCL')
+        return explicit_flags
 
     def log(self, txt):
         if not self.logfile:

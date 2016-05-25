@@ -5,30 +5,30 @@ import pwd
 import grp
 
 _filemode_table = (
-    ((S_IFLNK,         "l"),
-     (S_IFREG,         "-"),
-     (S_IFBLK,         "b"),
-     (S_IFDIR,         "d"),
-     (S_IFCHR,         "c"),
-     (S_IFIFO,         "p")),
+    ((S_IFLNK, 'l'),
+     (S_IFREG, '-'),
+     (S_IFBLK, 'b'),
+     (S_IFDIR, 'd'),
+     (S_IFCHR, 'c'),
+     (S_IFIFO, 'p')),
 
-    ((S_IRUSR,         "r"),),
-    ((S_IWUSR,         "w"),),
-    ((S_IXUSR | S_ISUID, "s"),
-     (S_ISUID,         "S"),
-     (S_IXUSR,         "x")),
+    ((S_IRUSR, 'r'),),
+    ((S_IWUSR, 'w'),),
+    ((S_IXUSR | S_ISUID, 's'),
+     (S_ISUID, 'S'),
+     (S_IXUSR, 'x')),
 
-    ((S_IRGRP,         "r"),),
-    ((S_IWGRP,         "w"),),
-    ((S_IXGRP | S_ISGID, "s"),
-     (S_ISGID,         "S"),
-     (S_IXGRP,         "x")),
+    ((S_IRGRP, 'r'),),
+    ((S_IWGRP, 'w'),),
+    ((S_IXGRP | S_ISGID, 's'),
+     (S_ISGID, 'S'),
+     (S_IXGRP, 'x')),
 
-    ((S_IROTH,         "r"),),
-    ((S_IWOTH,         "w"),),
-    ((S_IXOTH | S_ISVTX, "t"),
-     (S_ISVTX,         "T"),
-     (S_IXOTH,         "x"))
+    ((S_IROTH, 'r'),),
+    ((S_IWOTH, 'w'),),
+    ((S_IXOTH | S_ISVTX, 't'),
+     (S_ISVTX, 'T'),
+     (S_IXOTH, 'x'))
 )
 
 _paddings = (  # the len of each field of the longname string
@@ -50,7 +50,7 @@ def filemode(mode):
                 perm.append(char)
                 break
         else:
-            perm.append("-")
+            perm.append('-')
     return ''.join(perm).encode()
 
 
@@ -75,7 +75,7 @@ def stat_to_longname(st, filename):
         pwd.getpwuid(st.st_uid)[0],
         grp.getgrgid(st.st_gid)[0],
         str(st.st_size),
-        time.strftime("%b %d %H:%M", time.gmtime(st.st_mtime)),
+        time.strftime('%b %d %H:%M', time.gmtime(st.st_mtime)),
     ]
 
     # add needed padding
