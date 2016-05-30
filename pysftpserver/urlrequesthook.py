@@ -18,9 +18,9 @@ class UrlRequestHook(SftpHook):
     """A SftpHook whose methods send a request to a specific url, containing
     the called method name and attributes.
 
-    In principle, each method of the hook may call a set of different urls,
-    which is obtained crossing a list of base urls with a list of optional
-    paths (in all possible combinations), according to the following logic:
+    In principle, each method of the hook may call a different set of urls,
+    which is obtained combinig a list of base urls with a list of optional
+    paths (in all possible ways), according to the following logic:
         - a list of base urls for a given method is searched in the
         urls_mapping dict using the method name as a key, if nothing is found
         it defaults to a list containing only the url provided at init time.
@@ -34,14 +34,14 @@ class UrlRequestHook(SftpHook):
     In case optional paths were not desired for one or more methods, the
     paths_mapping dict should map those method names to empty strings.
 
-    Paramaters:
-        logfile (optional): path of the log file.
+    Optional Args:
+        logfile (str/bytes): The path of the log file.
 
     Attributes:
-        request_url (string): the base url to send the request to.
-        request_method (string): the request method to use – 'GET' or 'POST'.
-        urls_mapping (dict): map hook method names with custom base urls.
-        paths_mapping (dict): map hook method names with optional paths.
+        request_url (str/bytes): The base url to send the request to.
+        request_method (str/bytes): The request method to use.
+        urls_mapping (dict): Map hook method names with custom base urls.
+        paths_mapping (dict): Map hook method names with optional paths.
     """
     urls_mapping = dict()
     paths_mapping = dict()
@@ -73,10 +73,10 @@ class UrlRequestHook(SftpHook):
             as well as iterables of urls.
 
         Args:
-            value (string or iterable): The value to force to iterable.
+            value (str or Iterable): The value to force to iterable.
 
         Returns:
-            iterable: The output iterable.
+            (Iterable): The output iterable.
         """
         if isinstance(value, (str, bytes)):
             return (value,)
@@ -90,10 +90,11 @@ class UrlRequestHook(SftpHook):
 
         Args:
             method_name (str): The value to use as key in urls_mapping and
-            paths_mapping to obtain base urls and optional paths respectively.
+                paths_mapping to obtain base urls and optional paths
+                respectively.
 
         Returns:
-            set: A set of urls.
+            (set): A set of urls.
         """
         base_urls = self.force_to_iterable(
             self.urls_mapping.get(method_name, self.request_url))
@@ -107,10 +108,12 @@ class UrlRequestHook(SftpHook):
 
         Args:
             method_name (str): The name of the hook method used to get urls.
-            data (optional, dict): Added data to send along with the request.
+
+        Optional Args:
+            data (dict): Added data to send along with the request.
 
         Yields:
-            Response: An instance of requests Response.
+            (Response): An instance of requests Response.
         """
         if data is None:
             data = {}

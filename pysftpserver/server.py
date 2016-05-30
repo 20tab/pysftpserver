@@ -94,6 +94,20 @@ class SFTPServer(object):
             sys.stderr = self.logfile
 
     def new_handle(self, filename, flags=0, attrs=dict(), is_opendir=False):
+        """Create a new handle for a file or a directory.
+
+        Args:
+            filename (str/bytes): The path to the file to create a handle for.
+
+        Optional Args:
+            flags (int): a series of binary flags combined in a single integer.
+            attrs (dict): valid only for files, used to indicate permissions.
+            is_opendir (bool): specify if filename refers to a directory or a
+                file (default).
+
+        Returns:
+            (bytes): The id of the newly created handle.
+        """
         if is_opendir:
             handle = self.storage.opendir(filename)
         else:
@@ -129,13 +143,13 @@ class SFTPServer(object):
         """Recover the name of a file or directory from its handle id.
 
         Args:
-            handle_id (int): The handle id of the file or directory.
+            handle_id (bytes): The handle id of the file or directory.
 
         Returns:
-            str: The name of the directory or file corresponding to the
+            (str): The name of the directory or file corresponding to the
                 provided handle id. None if neither a directory nor a file
                 is found.
-            bool: True if the recovered filename is a directory. False if
+            (bool): True if the recovered filename is a directory. False if
                 it is a file. None if nothing is found.
         """
         if handle_id in self.dirs:
@@ -153,7 +167,7 @@ class SFTPServer(object):
             flags (int): The flags integer value.
 
         Returns:
-            set: A set of strings (e.g. 'RDONLY', 'APPEND').
+            (set): A set of strings (e.g. 'RDONLY', 'APPEND').
         """
         explicit_flags = set()
         if flags & SSH2_FXF_READ and flags & SSH2_FXF_WRITE:
@@ -179,26 +193,51 @@ class SFTPServer(object):
         self.logfile.flush()
 
     def consume_int(self):
+        """Extract a 32 bit integer value from the payload.
+
+        Returns:
+            (int): The extracted integer value.
+        """
         value, = struct.unpack('>I', self.payload[0:4])
         self.payload = self.payload[4:]
         return value
 
     def consume_int64(self):
+        """Extract a 64 bit integer value from the payload.
+
+        Returns:
+            (int): The extracted integer value.
+        """
         value, = struct.unpack('>Q', self.payload[0:8])
         self.payload = self.payload[8:]
         return value
 
     def consume_string(self):
+        """Extract a string from the payload.
+
+        Returns:
+            (bytes): The extracted string value in bytes.
+        """
         slen = self.consume_int()
         s = self.payload[0:slen]
         self.payload = self.payload[slen:]
         return s
 
     def consume_handle_and_id(self):
+        """Recover a handle extracting its id from the payload.
+
+        Returns:
+            (bytes, bytes): The extracted integer value.
+        """
         handle_id = self.consume_string()
         return self.handles[handle_id], handle_id
 
     def consume_attrs(self):
+        """Extract and decode a series of file attributes from the payload.
+
+        Returns:
+            (dict): Map each extracted file attribute to its value.
+        """
         attrs = {}
         flags = self.consume_int()
         if flags & SSH2_FILEXFER_ATTR_SIZE:
@@ -221,6 +260,15 @@ class SFTPServer(object):
         return attrs
 
     def consume_filename(self, default=None):
+        """Extract a filename from the payload.
+
+        Returns:
+            (bytes): The extracted filename.
+
+        Exceptions:
+            SftpNotFound: No file exists with the input filename.
+            SftpForbidden: The input filename position can not be accessed.
+        """
         filename = self.consume_string()
         if filename == b'.':
             filename = self.storage.home.encode()
@@ -234,6 +282,11 @@ class SFTPServer(object):
         raise SFTPForbidden()
 
     def encode_attrs(self, attrs):
+        """Pack a series of file attributes in a single bytes string.
+
+        Returns:
+            (bytes): The string in which the file attributes are packed.
+        """
         flags = (SSH2_FILEXFER_ATTR_SIZE |
                  SSH2_FILEXFER_ATTR_UIDGID |
                  SSH2_FILEXFER_ATTR_PERMISSIONS |
@@ -247,6 +300,11 @@ class SFTPServer(object):
                            int(attrs[b'mtime']))
 
     def send_msg(self, msg):
+        """Append a message to the output queue.
+
+        Args:
+            msg (bytes): The message to enqueue.
+        """
         msg_len = struct.pack('>I', len(msg))
         self.output_queue += msg_len + msg
 
@@ -268,6 +326,8 @@ class SFTPServer(object):
         self.send_msg(msg)
 
     def run(self):
+        """Keep the server active until the buffer is empty or an error occurs.
+        """
         while True:
             if self.run_once():
                 return
@@ -290,6 +350,8 @@ class SFTPServer(object):
             self.output_queue = self.output_queue[rlen:]
 
     def process(self):
+        """Process the input queue, extracting messages and executing commands.
+        """
         while True:
             if len(self.input_queue) < 5:
                 return
