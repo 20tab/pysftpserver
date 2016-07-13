@@ -19,7 +19,7 @@ class UrlRequestHook(SftpHook):
     the called method name and attributes.
 
     In principle, each method of the hook may call a different set of urls,
-    which is obtained combinig a list of base urls with a list of optional
+    which is obtained combining a list of base urls with a list of optional
     paths (in all possible ways), according to the following logic:
         - a list of base urls for a given method is searched in the
         urls_mapping dict using the method name as a key, if nothing is found
@@ -43,13 +43,13 @@ class UrlRequestHook(SftpHook):
         urls_mapping (dict): Map hook method names with custom base urls.
         paths_mapping (dict): Map hook method names with optional paths.
     """
-    urls_mapping = dict()
-    paths_mapping = dict()
 
-    def __init__(self, request_url, request_method='POST', logfile=None, *args,
-                 **kwargs):
+    def __init__(self, request_url, request_method='POST', logfile=None,
+                 urls_mapping=None, paths_mapping=None, *args, **kwargs):
         self.request_url = request_url
         self.request_method = request_method
+        self.urls_mapping = urls_mapping or dict()
+        self.paths_mapping = paths_mapping or dict()
         if logfile:
             log_handler = logging.FileHandler(logfile)
             log_handler.setLevel(logging.DEBUG)
@@ -94,13 +94,13 @@ class UrlRequestHook(SftpHook):
                 respectively.
 
         Returns:
-            (set): A set of urls.
+            (tuple): A tuple of urls.
         """
         base_urls = self.force_to_iterable(
             self.urls_mapping.get(method_name, self.request_url))
         paths = self.force_to_iterable(
             self.paths_mapping.get(method_name, method_name))
-        return set(os.path.join(u, p) for u in base_urls for p in paths)
+        return (os.path.join(u, p) for u in base_urls for p in paths)
 
     def generate_response(self, method_name, data=None):
         """Generate responses by sending requests to the urls associated to a
@@ -122,86 +122,85 @@ class UrlRequestHook(SftpHook):
         for url in urls:
             logger.info('"{}" executed. Sending request to {}.'.format(
                 method_name, url))
-            yield request(self.method, url, data=data)
+            yield request(self.request_method, url, data=data)
 
-    def init(self):
+    def init(self, server):
         return list(self.generate_response('init'))
 
-    def realpath(self, filename):
+    def realpath(self, server, filename):
         data = {'filename': filename}
         return list(self.generate_response('realpath', data))
 
-    def stat(self, filename):
+    def stat(self, server, filename):
         data = {'filename': filename}
         return list(self.generate_response('stat', data))
 
-    def lstat(self, filename):
+    def lstat(self, server, filename):
         data = {'filename': filename}
         return list(self.generate_response('lstat', data))
 
-    def fstat(self, handle_id):
-        filename, is_dir = self.server.get_filename_from_handle_id(handle_id)
+    def fstat(self, server, handle_id):
+        filename, is_dir = server.get_filename_from_handle_id(handle_id)
         data = {'filename': filename}
         return list(self.generate_response('fstat', data))
 
-    def setstat(self, filename, attrs):
+    def setstat(self, server, filename, attrs):
         data = {'filename': filename, 'attrs': attrs}
         return list(self.generate_response('setstat', data))
 
-    def fsetstat(self, handle_id, attrs):
-        filename, is_dir = self.server.get_filename_from_handle_id(handle_id)
+    def fsetstat(self, server, handle_id, attrs):
+        filename, is_dir = server.get_filename_from_handle_id(handle_id)
         data = {'filename': filename, 'attrs': attrs}
         return list(self.generate_response('fsetstat', data))
 
-    def opendir(self, filename):
+    def opendir(self, server, filename):
         data = {'filename': filename}
         return list(self.generate_response('opendir', data))
 
-    def readdir(self, handle_id):
-        filename, is_dir = self.server.get_filename_from_handle_id(handle_id)
+    def readdir(self, server, handle_id):
+        filename, is_dir = server.get_filename_from_handle_id(handle_id)
         data = {'filename': filename}
         return list(self.generate_response('readdir', data))
 
-    def close(self, handle_id):
-        filename, is_dir = self.server.get_filename_from_handle_id(handle_id)
+    def close(self, server, handle_id):
+        filename, is_dir = server.get_filename_from_handle_id(handle_id)
         data = {'filename': filename}
         return list(self.generate_response('close', data))
 
-    def open(self, filename, flags, attrs):
-        data = {'filename': filename, 'attrs': attrs,
-                'flags': self.server.get_explicit_flags(flags)}
+    def open(self, server, filename, flags, attrs):
+        data = {'filename': filename, 'attrs': attrs, 'flags': flags}
         return list(self.generate_response('open', data))
 
-    def read(self, handle_id, offset, size):
-        filename, is_dir = self.server.get_filename_from_handle_id(handle_id)
+    def read(self, server, handle_id, offset, size):
+        filename, is_dir = server.get_filename_from_handle_id(handle_id)
         data = {'filename': filename, 'offset': offset, 'size': size}
         return list(self.generate_response('read', data))
 
-    def write(self, handle_id, offset, chunk):
-        filename, is_dir = self.server.get_filename_from_handle_id(handle_id)
+    def write(self, server, handle_id, offset, chunk):
+        filename, is_dir = server.get_filename_from_handle_id(handle_id)
         data = {'filename': filename, 'offset': offset, 'chunk': chunk}
         return list(self.generate_response('write', data))
 
-    def mkdir(self, filename, attrs):
+    def mkdir(self, server, filename, attrs):
         data = {'filename': filename, 'attrs': attrs}
         return list(self.generate_response('mkdir', data))
 
-    def rmdir(self, filename):
+    def rmdir(self, server, filename):
         data = {'filename': filename}
         return list(self.generate_response('rmdir', data))
 
-    def rm(self, filename):
+    def rm(self, server, filename):
         data = {'filename': filename}
         return list(self.generate_response('rm', data))
 
-    def rename(self, oldpath, newpath):
+    def rename(self, server, oldpath, newpath):
         data = {'oldpath': oldpath, 'newpath': newpath}
         return list(self.generate_response('rename', data))
 
-    def symlink(self, linkpath, targetpath):
+    def symlink(self, server, linkpath, targetpath):
         data = {'linkpath': linkpath, 'targetpath': targetpath}
         return list(self.generate_response('symlink', data))
 
-    def readlink(self, filename):
+    def readlink(self, server, filename):
         data = {'filename': filename}
         return list(self.generate_response('readlink', data))
