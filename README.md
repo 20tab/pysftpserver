@@ -140,11 +140,11 @@ server = SFTPServer(
 A single base url must be provided (`'my_main_base_url'` in the example), which is used for all the actions not mapped to a custom base url. The default request method is POST but it can be changed to GET using the optional `request_method` argument. The default behaviour for each callback is sending a request to a url obtained combining the base url and the name of the action (e.g. `'my_main_base_url/symlink'`, `'my_main_base_url/fsetstat'`). `urls_mapping` and `paths_mapping` are dictionaries (empty by default) through which custom base urls and custom url paths can be assigned to certain actions, note that single values and lists are combined and *all* the resulting urls are used.
 
 The hook of the previous example will perform GET requests. The indicated mappings will produce the following behaviour:
-- when `rmdir` is executed, 4 urls are called, in order: `'my_base_url_for_rmdir_1/my_path_for_rmdir_1'`, `'my_base_url_for_rmdir_1/my_path_for_rmdir_2'`, `'my_base_url_for_rmdir_2/my_path_for_rmdir_1'` and `'my_base_url_for_rmdir_2/my_path_for_rmdir_2'` (all combinations of base urls and paths from the mappings are used and the main base url is ignored);
-- when `setstat` is executed, 2 urls are called, in order: `'my_main_base_url/my_path_for_setstat'` and `'my_oter_base_url_for_setstat/my_path_for_setstat'` (lists are combined with strings);
-- when `symlink` is executed, 1 url is called: `'my_base_url_for_symlink/symlink'` (since no custom path is provided for `symlink`, the default path – i.e. the action name – is used);
-- when `open` is executed, 1 url is called: `'my_main_base_url/'` (the main base url is used because no custom base url is provided for `open`, and the default path is *not* used because `open` is mapped to an empty custom path);
-- when any other action is executed, 1 url is called (default behaviour): `'my_main_base_url/name_of_the_action'`.
+- when `rmdir` is executed, 4 requests are sent to the following urls, in order: `'my_base_url_for_rmdir_1/my_path_for_rmdir_1'`, `'my_base_url_for_rmdir_1/my_path_for_rmdir_2'`, `'my_base_url_for_rmdir_2/my_path_for_rmdir_1'` and `'my_base_url_for_rmdir_2/my_path_for_rmdir_2'` (all combinations of base urls and paths from the mappings are used and the main base url is ignored);
+- when `setstat` is executed, 2 requests are sent to the following urls, in order: `'my_main_base_url/my_path_for_setstat'` and `'my_oter_base_url_for_setstat/my_path_for_setstat'` (lists are combined with strings);
+- when `symlink` is executed, 1 request is sent to the following url: `'my_base_url_for_symlink/symlink'` (since no custom path is provided for `symlink`, the default path – i.e. the action name – is used);
+- when `open` is executed, 1 request is sent to the following url: `'my_main_base_url/'` (the main base url is used because no custom base url is provided for `open`, and the default path is *not* used because `open` is mapped to an empty custom path);
+- when any other action is executed, 1 request is sent to the following url (default behaviour): `'my_main_base_url/name_of_the_action'`.
 
 
 ## Customization
