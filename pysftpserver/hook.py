@@ -13,59 +13,59 @@ class SftpHook:
     """
     server = None
 
-    def init(self):
+    def init(self, server):
         pass
 
-    def realpath(self, filename):
+    def realpath(self, server, filename):
         pass
 
-    def stat(self, filename):
+    def stat(self, server, filename):
         pass
 
-    def lstat(self, filename):
+    def lstat(self, server, filename):
         pass
 
-    def fstat(self, handle_id):
+    def fstat(self, server, handle_id):
         pass
 
-    def setstat(self, filename, attrs):
+    def setstat(self, server, filename, attrs):
         pass
 
-    def fsetstat(self, handle_id, attrs):
+    def fsetstat(self, server, handle_id, attrs):
         pass
 
-    def opendir(self, filename):
+    def opendir(self, server, filename):
         pass
 
-    def readdir(self, handle_id):
+    def readdir(self, server, handle_id):
         pass
 
-    def close(self, handle_id):
+    def close(self, server, handle_id):
         pass
 
-    def open(self, filename, flags, attrs):
+    def open(self, server, filename, flags, attrs):
         pass
 
-    def read(self, handle_id, offset, size):
+    def read(self, server, handle_id, offset, size):
         pass
 
-    def write(self, handle_id, offset, chunk):
+    def write(self, server, handle_id, offset, chunk):
         pass
 
-    def mkdir(self, filename, attrs):
+    def mkdir(self, server, filename, attrs):
         pass
 
-    def rmdir(self, filename):
+    def rmdir(self, server, filename):
         pass
 
-    def rm(self, filename):
+    def rm(self, server, filename):
         pass
 
-    def rename(self, oldpath, newpath):
+    def rename(self, server, oldpath, newpath):
         pass
 
-    def symlink(self, linkpath, targetpath):
+    def symlink(self, server, linkpath, targetpath):
         pass
 
-    def readlink(self, filename):
+    def readlink(self, server, filename):
         pass

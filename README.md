@@ -1,14 +1,14 @@
-#pysftpserver
+# pysftpserver
 An OpenSSH SFTP wrapper written in Python.
 
-##Features
+## Features
 * Possibility to [automatically jail users](#authorized_keys_magic) in a virtual chroot environment as soon as they login.
 * Possibility to [automatically forward SFTP requests to another server](#usage).
 * Compatible with both Python 2 and Python 3.
 * Fully extensible and customizable (examples below).
 * Totally conforms to the [SFTP RFC](https://filezilla-project.org/specs/draft-ietf-secsh-filexfer-02.txt).
 
-##Installation
+## Installation
 Simply install pysftpserver with pip:
 ```bash
 $ pip install pysftpserver # add the --user flag to install it just for you
@@ -26,7 +26,7 @@ $ cd pysftpserver
 $ python setup.py install
 ```
 
-##Usage
+## Usage
 We provide a couple of fully working examples:
 
 * **pysftpjail**: an SFTP storage that jails users in a virtual chroot environment.
@@ -86,7 +86,7 @@ optional arguments:
                         warning!)
 ```
 
-###authorized_keys magic
+### `authorized_keys` magic
 With `pysftpjail` you can jail any user in the virtual chroot as soon as she connects to the SFTP server.
 You can do it by simply prepending the `pysftpjail` command to the user entry in your SSH `authorized_keys` file, e.g.:
 ```
@@ -103,19 +103,61 @@ Achieving as final result:
 command="pysftpjail path_to_your_jail",no-port-forwarding,no-x11-forwarding,no-agent-forwarding ssh-rsa AAAAB3[... and so on]
 ```
 
-Obviusly, you could do the same with `pysftpproxy`.
+Obviously, the same can be done using `pysftpproxy`.
 
-##Customization
+### Server callbacks
+A subclass of [`SftpHook`](pysftpserver/hook.py) can be associated to the server. Then, every time an SFTP action is executed (e.g. open, rm, symlink), the corresponding hook method is called. Each method receives, as arguments, the server instance plus some variable parameters that depend on the performed action. This allows to implement a completely customizable set of callbacks.
+
+#### Url requests as a callback
+An implementation of a hook is provided that uses [requests](http://docs.python-requests.org/en/master/) to send HTTP requests to a set of urls, containing the parameters of the executed action as data. The urls to be called and the HTTP method to use can be specified when the hook is initialized. 
+
+```python
+"""Example of a SFTP server hook performing HTTP requests."""
+
+from pysftpserver.server import SFTPServer
+from pysftpserver.storage import SFTPServerStorage
+from pysftpserver.urlrequesthook import UrlRequestHook
+
+my_hook = UrlRequestHook(
+    'my_main_base_url',
+    urls_mapping={
+        'rmdir': ['my_base_url_for_rmdir_1', 'my_base_url_for_rmdir_2'],
+        'setstat': ['my_main_base_url', 'my_oter_base_url_for_setstat'],        
+        'symlink': 'my_base_url_for_symlink',
+    },
+    paths_mapping={
+        'open': '',
+        'rmdir': ['my_path_for_rmdir_1', 'my_path_for_rmdir_2'],
+        'setstat': 'my_path_for_setstat',
+    },
+    request_method='GET')
+
+server = SFTPServer(
+    SFTPServerStorage('mydir'),
+    hook=my_hook)
+```
+
+A single base url must be provided (`'my_main_base_url'` in the example), which is used for all the actions not mapped to a custom base url. The default request method is POST but it can be changed to GET using the optional `request_method` argument. The default behaviour for each callback is sending a request to a url obtained combining the base url and the name of the action (e.g. `'my_main_base_url/symlink'`, `'my_main_base_url/fsetstat'`). `urls_mapping` and `paths_mapping` are dictionaries (empty by default) through which custom base urls and custom url paths can be assigned to certain actions, note that single values and lists are combined and *all* the resulting urls are used.
+
+The hook of the previous example will perform GET requests. The indicated mappings will produce the following behaviour:
+- when `rmdir` is executed, 4 urls are called, in order: `'my_base_url_for_rmdir_1/my_path_for_rmdir_1'`, `'my_base_url_for_rmdir_1/my_path_for_rmdir_2'`, `'my_base_url_for_rmdir_2/my_path_for_rmdir_1'` and `'my_base_url_for_rmdir_2/my_path_for_rmdir_2'` (all combinations of base urls and paths from the mappings are used and the main base url is ignored);
+- when `setstat` is executed, 2 urls are called, in order: `'my_main_base_url/my_path_for_setstat'` and `'my_oter_base_url_for_setstat/my_path_for_setstat'` (lists are combined with strings);
+- when `symlink` is executed, 1 url is called: `'my_base_url_for_symlink/symlink'` (since no custom path is provided for `symlink`, the default path – i.e. the action name – is used);
+- when `open` is executed, 1 url is called: `'my_main_base_url/'` (the main base url is used because no custom base url is provided for `open`, and the default path is *not* used because `open` is mapped to an empty custom path);
+- when any other action is executed, 1 url is called (default behaviour): `'my_main_base_url/name_of_the_action'`.
+
+
+## Customization
 We provide two complete examples of SFTP storage: simple and jailed.
 Anyway, you can subclass our [generic abstract storage](pysftpserver/abstractstorage.py) and you can adapt it to your needs.
 Any contribution is welcomed, as always. :+1:
 
-###Real world customization: MongoDB / GridFS storage
+### Real world customization: MongoDB / GridFS storage
 [MongoDB](http://www.mongodb.org/) is an open, NOSQL, document database.
 [GridFS](http://docs.mongodb.org/manual/core/gridfs/) is a specification for storing and retrieving arbitrary files in a MongoDB database.
 The following example will show how to build a storage that handles files in a MongoDB / GridFS database.
 
-####Preliminary requirements
+#### Preliminary requirements
 I assume you already have a MongoDB database running somewhere and you are using a [`virtualenv`](https://virtualenv.readthedocs.org/en/latest/virtualenv.html).
 Let's install the MongoDB Python driver, `pymongo`, with:
 ```bash
@@ -132,7 +174,7 @@ $ python setup.py develop
 
 Now you're ready to create the storage.
 
-####New storage class
+#### New storage class
 Let's create a new storage (save it as `pysftpserver/mongostorage.py`) that subclasses the [abstract storage](pysftpserver/abstractstorage.py) class.
 
 ```python
@@ -185,7 +227,7 @@ As you can see, it's all pretty straight-forward.
 In the `init` method, we initialize the MongoDB client, select the database to use and then we initialize GridFS.
 Then, in the `open` method, we check if the file exists and return it's handler; in the `read` and `close` methods we simply forward the calls to the GridFS.
 
-####Testing the new storage
+#### Testing the new storage
 I strongly encourage you to test your newly created storage. 
 Here's an example (save it as `pysftpserver/tests/test_server_mongo.py`):
 
@@ -275,12 +317,12 @@ class Test(unittest.TestCase):
         rmtree(t_path("home"), ignore_errors=True)
 ```
 
-####Final results
+#### Final results
 Finally, you can create a binary to comfortably launch the server using the created storage.
 Save it as `bin/pysftpmongo`.
 
 ```python
-#!/usr/bin/env python
+# !/usr/bin/env python
 """pysftpmongo executable."""
 
 import argparse
@@ -333,15 +375,15 @@ command="pysftpmongo REMOTE_TO_YOUR_DB REMOTE_PORT DB_NAME",no-port-forwarding,n
 
 That's it!
 
-####Code used in this example
+#### Code used in this example
 All the code used in this example can be found in the [`examples/mongodb_gridfs`](examples/mongodb_gridfs/) directory of this repository.
 
-##FileZilla compatibility
+## FileZilla compatibility
 FileZilla requires the `longname` returned with each `SSH2_FXP_NAME` response (e.g. each time `readdir` is called) to be a string of the same format of the output of `ls -l` (`-rw-r--r--  1 aldur staff 9596 Dec 29 18:36 README.md`).
 
 So, if you want to keep compatibility with FileZilla, be sure to include a proper `longname` field to the stats dictionary you return from your storage, as we do [here](pysftpserver/storage.py#L78).
 
-##Tests
+## Tests
 You can use [nose](https://nose.readthedocs.org/en/latest/) for tests.
 From the project directory, simply run:
 ```bash
