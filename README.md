@@ -106,7 +106,7 @@ command="pysftpjail path_to_your_jail",no-port-forwarding,no-x11-forwarding,no-a
 Obviously, the same can be done using `pysftpproxy`.
 
 ### Server callbacks
-A subclass of [`SftpHook`](pysftpserver/hook.py) can be associated to the server. Then, every time an SFTP action is executed (e.g. open, rm, symlink), the corresponding hook method is called. Each method receives, as arguments, the server instance plus some variable parameters that depend on the performed action. This allows to implement a completely customizable set of callbacks.
+A subclass of [`SftpHook`](pysftpserver/hook.py) can be assigned to a `SFTPServer` instance. Every time an action is executed (e.g. `open`, `rm`, `symlink`), the corresponding hook method is called. Each method receives, as arguments, the server instance plus some variable parameters that depend on the performed action. This allows to implement a completely customizable set of callbacks.
 
 #### Url requests as a callback
 An implementation of a hook is provided that uses [requests](http://docs.python-requests.org/en/master/) to send HTTP requests to a set of urls, containing the parameters of the executed action as data. The urls to be called and the HTTP method to use can be specified when the hook is initialized. 
