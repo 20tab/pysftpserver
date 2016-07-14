@@ -109,7 +109,7 @@ Obviously, the same can be done using `pysftpproxy`.
 A subclass of [`SftpHook`](pysftpserver/hook.py) can be assigned to a `SFTPServer` instance. Every time an action is executed (e.g. `open`, `rm`, `symlink`), the corresponding hook method is called. Each method receives, as arguments, the server instance plus some variable parameters that depend on the performed action. This allows to implement a completely customizable set of callbacks.
 
 #### Url requests as a callback
-[`UrlRequestHook`](pysftpserver/urlrequesthook.py) is an implementation of a hook that uses [requests](http://docs.python-requests.org/en/master/) to send HTTP requests to a set of urls, containing the parameters of the executed action as data. The urls to be called and the HTTP method to use can be specified when the hook is initialized. 
+[`UrlRequestHook`](pysftpserver/urlrequesthook.py) is an implementation of a hook that uses [requests](http://docs.python-requests.org/en/master/) to send HTTP requests to a set of urls. These requests data comprises the name of the executed action and its parameters. The urls to be called and the HTTP method to use can be specified when the hook is initialized. 
 
 ```python
 """Example of a SFTP server hook performing HTTP requests."""
@@ -122,7 +122,7 @@ my_hook = UrlRequestHook(
     'my_main_base_url',
     urls_mapping={
         'rmdir': ['my_base_url_for_rmdir_1', 'my_base_url_for_rmdir_2'],
-        'setstat': ['my_main_base_url', 'my_oter_base_url_for_setstat'],        
+        'setstat': ['my_main_base_url', 'my_other_base_url_for_setstat'],        
         'symlink': 'my_base_url_for_symlink',
     },
     paths_mapping={
@@ -141,7 +141,7 @@ A single base url must be provided (`'my_main_base_url'` in the example), which 
 
 The hook of the previous example will perform GET requests. The indicated mappings will produce the following behaviour:
 - when `rmdir` is executed, 4 requests are sent to the following urls, in order: `'my_base_url_for_rmdir_1/my_path_for_rmdir_1'`, `'my_base_url_for_rmdir_1/my_path_for_rmdir_2'`, `'my_base_url_for_rmdir_2/my_path_for_rmdir_1'` and `'my_base_url_for_rmdir_2/my_path_for_rmdir_2'` (all combinations of base urls and paths from the mappings are used and the main base url is ignored);
-- when `setstat` is executed, 2 requests are sent to the following urls, in order: `'my_main_base_url/my_path_for_setstat'` and `'my_oter_base_url_for_setstat/my_path_for_setstat'` (lists are combined with strings);
+- when `setstat` is executed, 2 requests are sent to the following urls, in order: `'my_main_base_url/my_path_for_setstat'` and `'my_other_base_url_for_setstat/my_path_for_setstat'` (lists are combined with strings);
 - when `symlink` is executed, 1 request is sent to the following url: `'my_base_url_for_symlink/symlink'` (since no custom path is provided for `symlink`, the default path – i.e. the action name – is used);
 - when `open` is executed, 1 request is sent to the following url: `'my_main_base_url/'` (the main base url is used because no custom base url is provided for `open`, and the default path is *not* used because `open` is mapped to an empty custom path);
 - when any other action is executed, 1 request is sent to the following url (default behaviour): `'my_main_base_url/name_of_the_action'`.
