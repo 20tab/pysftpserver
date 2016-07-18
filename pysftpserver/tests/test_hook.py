@@ -28,7 +28,7 @@ class TestHook(SftpHook):
 
     def __init__(self, code_length=6, *args, **kwargs):
         self._results = dict()
-        super().__init__(*args, **kwargs)
+        super(TestHook, self).__init__(*args, **kwargs)
 
     def _get_results_key(self, function_name, suffix=''):
         return (function_name + suffix and '_' + suffix or '').encode()

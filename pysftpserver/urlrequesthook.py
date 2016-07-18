@@ -57,7 +57,7 @@ class UrlRequestHook(SftpHook):
                 '%(asctime)s - %(levelname)s: %(message)s')
             log_handler.setFormatter(log_formatter)
             logger.addHandler(log_handler)
-        super().__init__(*args, **kwargs)
+        super(UrlRequestHook, self).__init__(*args, **kwargs)
 
     @staticmethod
     def force_to_iterable(value):
