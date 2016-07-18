@@ -10,10 +10,6 @@ from requests import request
 from pysftpserver.hook import SftpHook
 
 
-logger = logging.getLogger('url_request_hook_log')
-logger.setLevel(logging.DEBUG)
-
-
 class UrlRequestHook(SftpHook):
     """A SftpHook whose methods send a request to a specific url, containing
     the called method name and attributes.
@@ -56,7 +52,11 @@ class UrlRequestHook(SftpHook):
             log_formatter = logging.Formatter(
                 '%(asctime)s - %(levelname)s: %(message)s')
             log_handler.setFormatter(log_formatter)
-            logger.addHandler(log_handler)
+            self.logger = logging.getLogger('url_request_hook_log')
+            self.logger.setLevel(logging.DEBUG)
+            self.logger.addHandler(log_handler)
+        else:
+            self.logger = None
         super(UrlRequestHook, self).__init__(*args, **kwargs)
 
     @staticmethod
@@ -120,8 +120,10 @@ class UrlRequestHook(SftpHook):
         data['method'] = method_name
         urls = self.get_urls(method_name)
         for url in urls:
-            logger.info('"{}" executed. Sending request to {}.'.format(
-                method_name, url))
+            if self.logger:
+                self.logger.info(
+                    '"{}" executed. Sending request to {}.'.format(
+                        method_name, url))
             yield request(self.request_method, url, data=data)
 
     def init(self, server):
