@@ -40,10 +40,12 @@ class UrlRequestHook(SftpHook):
         paths_mapping (dict): Map hook method names with optional paths.
     """
 
-    def __init__(self, request_url, request_method='POST', logfile=None,
-                 urls_mapping=None, paths_mapping=None, *args, **kwargs):
+    def __init__(self, request_url, request_method='POST', request_auth=None,
+                 logfile=None, urls_mapping=None, paths_mapping=None, *args,
+                 **kwargs):
         self.request_url = request_url
         self.request_method = request_method
+        self.request_auth = request_auth
         self.urls_mapping = urls_mapping or dict()
         self.paths_mapping = paths_mapping or dict()
         if logfile:
@@ -124,7 +126,8 @@ class UrlRequestHook(SftpHook):
                 self.logger.info(
                     '"{}" executed. Sending request to {}.'.format(
                         method_name, url))
-            yield request(self.request_method, url, data=data)
+            yield request(self.request_method, url, data=data,
+                          auth=self.request_auth)
 
     def init(self, server):
         return list(self.send_requests('init'))
