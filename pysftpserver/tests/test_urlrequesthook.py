@@ -53,7 +53,7 @@ class ServerTest(unittest.TestCase):
             SSH2_FXP_INIT, sftpint(2), sftpint(0))
         self.server.process()
         mock_request.assert_called_once_with(
-            'POST', 'test_url/init', data={'method': 'init'})
+            'POST', 'test_url/init', auth=None, data={'method': 'init'})
 
     @mock.patch('pysftpserver.urlrequesthook.request')
     def test_realpath(self, mock_request):
@@ -82,10 +82,10 @@ class ServerTest(unittest.TestCase):
         mock_request.assert_has_calls([
             mock.ANY,  # open
             mock.call(
-                'POST', 'test_url_1/',
+                'POST', 'test_url_1/', auth=None,
                 data={'method': 'realpath', 'filename': filename}),
             mock.call(
-                'POST', 'test_url_2/',
+                'POST', 'test_url_2/', auth=None,
                 data={'method': 'realpath', 'filename': filename}),
         ])
         os.unlink(filename)
@@ -106,10 +106,10 @@ class ServerTest(unittest.TestCase):
         self.server.process()
         mock_request.assert_has_calls([
             mock.call(
-                'POST', 'test_url_1/stat',
+                'POST', 'test_url_1/stat', auth=None,
                 data={'method': 'stat', 'filename': filename}),
             mock.call(
-                'POST', 'test_url_2/stat',
+                'POST', 'test_url_2/stat', auth=None,
                 data={'method': 'stat', 'filename': filename}),
         ])
         os.unlink(filename)
@@ -127,7 +127,7 @@ class ServerTest(unittest.TestCase):
         self.server.input_queue = sftpcmd(SSH2_FXP_LSTAT, sftpstring(linkname))
         self.server.process()
         mock_request.assert_called_once_with(
-            'POST', 'test_url/lstat',
+            'POST', 'test_url/lstat', auth=None,
             data={'method': 'lstat', 'filename': linkname})
         os.unlink(linkname)
 
@@ -151,7 +151,7 @@ class ServerTest(unittest.TestCase):
         mock_request.assert_has_calls([
             mock.ANY,  # open
             mock.call(
-                'POST', 'test_url/fstat',
+                'POST', 'test_url/fstat', auth=None,
                 data={'method': 'fstat', 'filename': filename}),
         ])
         os.unlink(filename)
@@ -204,7 +204,7 @@ class ServerTest(unittest.TestCase):
             mock.ANY,  # open
             mock.ANY,  # write
             mock.call(
-                'POST', 'test_url/setstat',
+                'POST', 'test_url/setstat', auth=None,
                 data={
                     'method': 'setstat', 'filename': filename,
                     'attrs': attrs}),
@@ -260,7 +260,7 @@ class ServerTest(unittest.TestCase):
             mock.ANY,  # open
             mock.ANY,  # write
             mock.call(
-                'POST', 'test_url/fsetstat',
+                'POST', 'test_url/fsetstat', auth=None,
                 data={
                     'method': 'fsetstat', 'filename': filename,
                     'attrs': attrs}),
@@ -286,13 +286,13 @@ class ServerTest(unittest.TestCase):
         self.server.process()
         mock_request.assert_has_calls([
             mock.call(
-                'POST', 'test_url/test_path_1',
+                'POST', 'test_url/test_path_1', auth=None,
                 data={'method': 'opendir', 'filename': dirname}),
             mock.call(
-                'POST', 'test_url/test_path_2',
+                'POST', 'test_url/test_path_2', auth=None,
                 data={'method': 'opendir', 'filename': dirname}),
             mock.call(
-                'POST', 'test_url/test_path_3',
+                'POST', 'test_url/test_path_3', auth=None,
                 data={'method': 'opendir', 'filename': dirname}),
             mock.ANY,  # close
         ])
@@ -315,7 +315,7 @@ class ServerTest(unittest.TestCase):
         mock_request.assert_has_calls([
             mock.ANY,  # opendir
             mock.call(
-                'POST', 'test_url/readdir',
+                'POST', 'test_url/readdir', auth=None,
                 data={'method': 'readdir', 'filename': dirname}),
             mock.ANY,  # close
         ])
@@ -338,7 +338,7 @@ class ServerTest(unittest.TestCase):
         mock_request.assert_has_calls([
             mock.ANY,  # open
             mock.call(
-                'POST', 'test_url/close',
+                'POST', 'test_url/close', auth=None,
                 data={'method': 'close', 'filename': filename}),
         ])
         os.unlink(filename)
@@ -362,7 +362,7 @@ class ServerTest(unittest.TestCase):
         self.server.process()
         mock_request.assert_has_calls([
             mock.call(
-                'POST', 'test_url/open',
+                'POST', 'test_url/open', auth=None,
                 data={
                     'method': 'open', 'filename': filename,
                     'flags': self.server.get_explicit_flags(flags),
@@ -409,7 +409,7 @@ class ServerTest(unittest.TestCase):
             mock.ANY,  # open
             mock.ANY,  # write
             mock.call(
-                'POST', 'test_url/read',
+                'POST', 'test_url/read', auth=None,
                 data={
                     'method': 'read', 'filename': filename,
                     'offset': read_offset, 'size': size}),
@@ -445,7 +445,7 @@ class ServerTest(unittest.TestCase):
         mock_request.assert_has_calls([
             mock.ANY,  # open
             mock.call(
-                'POST', 'test_url/write',
+                'POST', 'test_url/write', auth=None,
                 data={
                     'method': 'write', 'filename': filename,
                     'offset': write_offset, 'chunk': chunk}),
@@ -466,7 +466,7 @@ class ServerTest(unittest.TestCase):
             SSH2_FXP_MKDIR, sftpstring(dirname), sftpint(0))
         self.server.process()
         mock_request.assert_called_once_with(
-            'POST', 'test_url/',
+            'POST', 'test_url/', auth=None,
             data={'method': 'mkdir', 'filename': dirname, 'attrs': dict()})
         os.rmdir(dirname)
 
@@ -483,7 +483,7 @@ class ServerTest(unittest.TestCase):
         mock_request.assert_has_calls([
             mock.ANY,  # mkdir
             mock.call(
-                'POST', 'test_url/rmdir',
+                'POST', 'test_url/rmdir', auth=None,
                 data={'method': 'rmdir', 'filename': dirname}),
         ])
 
@@ -513,7 +513,7 @@ class ServerTest(unittest.TestCase):
             mock.ANY,  # open
             mock.ANY,  # close
             mock.call(
-                'POST', 'test_url/rm',
+                'POST', 'test_url/rm', auth=None,
                 data={'method': 'rm', 'filename': filename}),
         ])
 
@@ -544,7 +544,7 @@ class ServerTest(unittest.TestCase):
             mock.ANY,  # open
             mock.ANY,  # close
             mock.call(
-                'POST', 'test_url/rename',
+                'POST', 'test_url/rename', auth=None,
                 data={
                     'method': 'rename', 'oldpath': oldpath,
                     'newpath': newpath}),
@@ -562,7 +562,7 @@ class ServerTest(unittest.TestCase):
             sftpint(0))
         self.server.process()
         mock_request.assert_called_once_with(
-            'GET', 'test_url/symlink',
+            'GET', 'test_url/symlink', auth=None,
             data={
                 'method': 'symlink', 'linkpath': linkpath,
                 'targetpath': targetpath})
@@ -584,16 +584,16 @@ class ServerTest(unittest.TestCase):
         self.server.process()
         mock_request.assert_has_calls([
             mock.call(
-                'POST', 'test_url_1/test_path_1',
+                'POST', 'test_url_1/test_path_1', auth=None,
                 data={'method': 'readlink', 'filename': targetpath}),
             mock.call(
-                'POST', 'test_url_1/test_path_2',
+                'POST', 'test_url_1/test_path_2', auth=None,
                 data={'method': 'readlink', 'filename': targetpath}),
             mock.call(
-                'POST', 'test_url_2/test_path_1',
+                'POST', 'test_url_2/test_path_1', auth=None,
                 data={'method': 'readlink', 'filename': targetpath}),
             mock.call(
-                'POST', 'test_url_2/test_path_2',
+                'POST', 'test_url_2/test_path_2', auth=None,
                 data={'method': 'readlink', 'filename': targetpath}),
         ])
 

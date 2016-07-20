@@ -39,6 +39,7 @@ class UrlRequestHook(SftpHook):
         request_auth (see notes): The request method to use.
         urls_mapping (dict): Map hook method names with custom base urls.
         paths_mapping (dict): Map hook method names with optional paths.
+        hashing (callable): function to calculate file hash (default: None)
 
     Notes:
     - request_auth: this is passed as it is to the request, for further
@@ -47,13 +48,14 @@ class UrlRequestHook(SftpHook):
     """
 
     def __init__(self, request_url, request_method='POST', request_auth=None,
-                 logfile=None, urls_mapping=None, paths_mapping=None, *args,
-                 **kwargs):
+                 logfile=None, urls_mapping=None, paths_mapping=None,
+                 hashing=None, *args, **kwargs):
         self.request_url = request_url
         self.request_method = request_method
         self.request_auth = request_auth
         self.urls_mapping = urls_mapping or dict()
         self.paths_mapping = paths_mapping or dict()
+        self.hashing = hashing
         if logfile:
             log_handler = logging.FileHandler(logfile)
             log_handler.setLevel(logging.DEBUG)
@@ -92,6 +94,19 @@ class UrlRequestHook(SftpHook):
             return value
         raise TypeError('Provided value should be a string or an iterable.')
 
+    def calculate_hash(self, filename):
+        """Calculate the hash for a file based on its content.
+
+        Args:
+            filename (str): The full path of the file whose content to hash.
+        """
+        if self.hashing:
+            hash_obj = self.hashing()
+            with open(filename, 'rb') as file_content:
+                file_buffer = file_content.read()
+                hash_obj.update(file_buffer)
+            return hash_obj.hexdigest()
+
     def get_urls(self, method_name):
         """Build a set of urls to call for a given method name, combining
         values from urls_mapping and paths_mapping.
@@ -126,6 +141,8 @@ class UrlRequestHook(SftpHook):
         if data is None:
             data = {}
         data['method'] = method_name
+        if 'filename' in data and self.hashing:
+            data['filehash'] = self.calculate_hash(data['filename'])
         urls = self.get_urls(method_name)
         for url in urls:
             if self.logger:

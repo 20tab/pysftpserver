@@ -7,11 +7,7 @@ class SftpHook(object):
 
     Each method is named according to the server method to which it is
     hooked.
-
-    Attributes:
-        server (SftpServer): the server instance.
     """
-    server = None
 
     def init(self, server):
         pass
