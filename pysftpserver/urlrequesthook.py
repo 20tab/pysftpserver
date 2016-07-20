@@ -41,8 +41,9 @@ class UrlRequestHook(SftpHook):
         paths_mapping (dict): Map hook method names with optional paths.
 
     Notes:
-    - request_auth: for further reference see http://docs.python-requests.org/
-        en/master/user/advanced/#custom-authentication
+    - request_auth: this is passed as it is to the request, for further
+      reference see "Custom Authentication" section of
+      http://docs.python-requests.org/en/master/user/advanced/
     """
 
     def __init__(self, request_url, request_method='POST', request_auth=None,
