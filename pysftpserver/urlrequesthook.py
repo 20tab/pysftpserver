@@ -36,8 +36,13 @@ class UrlRequestHook(SftpHook):
     Attributes:
         request_url (str/bytes): The base url to send the request to.
         request_method (str/bytes): The request method to use.
+        request_auth (see notes): The request method to use.
         urls_mapping (dict): Map hook method names with custom base urls.
         paths_mapping (dict): Map hook method names with optional paths.
+
+    Notes:
+    - request_auth: for further reference see http://docs.python-requests.org/
+        en/master/user/advanced/#custom-authentication
     """
 
     def __init__(self, request_url, request_method='POST', request_auth=None,
