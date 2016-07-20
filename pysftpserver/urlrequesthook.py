@@ -141,8 +141,9 @@ class UrlRequestHook(SftpHook):
         if data is None:
             data = {}
         data['method'] = method_name
-        if 'filename' in data and self.hashing:
-            data['filehash'] = self.calculate_hash(data['filename'])
+        filename = data.get('filename')
+        if filename and os.path.isfile(filename) and self.hashing:
+            data['filehash'] = self.calculate_hash(filename)
         urls = self.get_urls(method_name)
         for url in urls:
             if self.logger:
