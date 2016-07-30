@@ -448,7 +448,7 @@ class ServerTest(unittest.TestCase):
                 'POST', 'test_url/write', auth=None,
                 data={
                     'method': 'write', 'filename': filename,
-                    'offset': write_offset, 'chunk': chunk}),
+                    'offset': write_offset}),
             mock.ANY,  # close
         ])
         os.unlink(filename)

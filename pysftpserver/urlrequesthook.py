@@ -205,9 +205,9 @@ class UrlRequestHook(SftpHook):
         data = {'filename': filename, 'offset': offset, 'size': size}
         return list(self.send_requests('read', data))
 
-    def write(self, server, handle_id, offset, chunk):
+    def write(self, server, handle_id, offset):
         filename, is_dir = server.get_filename_from_handle_id(handle_id)
-        data = {'filename': filename, 'offset': offset, 'chunk': chunk}
+        data = {'filename': filename, 'offset': offset}
         return list(self.send_requests('write', data))
 
     def mkdir(self, server, filename, attrs):

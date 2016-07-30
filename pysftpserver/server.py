@@ -84,6 +84,8 @@ class SFTPServer(object):
         self.handles = dict()
         self.dirs = dict()  # keep the path of opened dirs to rebuild it later
         self.files = dict()
+        self.write_handles = set()
+        self.read_handles = set()
         self.handle_cnt = 0
         self.raise_on_error = raise_on_error
         self.logfile = None
@@ -479,6 +481,9 @@ class SFTPServer(object):
     def _close(self, sid):
         # here we need to hold the handle id
         handle_id = self.consume_string()
+        handle_id in self.read_handles and self.read_handles.remove(handle_id)
+        handle_id in self.write_handles and self.write_handles.remove(
+            handle_id)
         self.hook and self.hook.close(self, handle_id)
         handle = self.handles[handle_id]
         self.storage.close(handle)
@@ -504,7 +509,9 @@ class SFTPServer(object):
         handle, handle_id = self.consume_handle_and_id()
         off = self.consume_int64()
         size = self.consume_int()
-        self.hook and self.hook.read(self, handle_id, off, size)
+        if handle_id not in self.read_handles:
+            self.read_handles.add(handle_id)
+            self.hook and self.hook.read(self, handle_id, off, size)
         chunk = self.storage.read(handle, off, size)
         if len(chunk) == 0:
             self.send_status(sid, SSH2_FX_EOF)
@@ -517,7 +524,9 @@ class SFTPServer(object):
         handle, handle_id = self.consume_handle_and_id()
         off = self.consume_int64()
         chunk = self.consume_string()
-        self.hook and self.hook.write(self, handle_id, off, chunk)
+        if handle_id not in self.write_handles:
+            self.write_handles.add(handle_id)
+            self.hook and self.hook.write(self, handle_id, off)
         if self.storage.write(handle, off, chunk):
             self.send_status(sid, SSH2_FX_OK)
         else:

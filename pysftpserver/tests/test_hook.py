@@ -86,11 +86,10 @@ class TestHook(SftpHook):
         self.set_result('read', offset, 'offset')
         self.set_result('read', size, 'size')
 
-    def write(self, server, handle_id, offset, chunk):
+    def write(self, server, handle_id, offset):
         filename, is_dir = server.get_filename_from_handle_id(handle_id)
         self.set_result('write', filename, 'filename')
         self.set_result('write', offset, 'offset')
-        self.set_result('write', chunk, 'chunk')
 
     def mkdir(self, server, filename, attrs):
         self.set_result('mkdir', filename, 'filename')
@@ -430,7 +429,6 @@ class ServerTest(unittest.TestCase):
         self.server.process()
         self.assertEqual(self.hook.get_result('write', 'filename'), filename)
         self.assertEqual(self.hook.get_result('write', 'offset'), write_offset)
-        self.assertEqual(self.hook.get_result('write', 'chunk'), chunk)
         self.server.output_queue = b''
         self.server.input_queue = sftpcmd(SSH2_FXP_CLOSE, sftpstring(handle))
         self.server.process()

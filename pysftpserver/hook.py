@@ -45,7 +45,7 @@ class SftpHook(object):
     def read(self, server, handle_id, offset, size):
         pass
 
-    def write(self, server, handle_id, offset, chunk):
+    def write(self, server, handle_id, offset):
         pass
 
     def mkdir(self, server, filename, attrs):
