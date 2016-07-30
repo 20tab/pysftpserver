@@ -484,6 +484,8 @@ class SFTPServer(object):
     def _close(self, sid):
         # here we need to hold the handle id
         handle_id = self.consume_string()
+        handle_id in self.readdir_handles and self.readdir_handles.remove(
+            handle_id)
         handle_id in self.read_handles and self.read_handles.remove(handle_id)
         handle_id in self.write_handles and self.write_handles.remove(
             handle_id)
