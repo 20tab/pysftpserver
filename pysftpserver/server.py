@@ -84,8 +84,9 @@ class SFTPServer(object):
         self.handles = dict()
         self.dirs = dict()  # keep the path of opened dirs to rebuild it later
         self.files = dict()
-        self.write_handles = set()
+        self.readdir_handles = set()
         self.read_handles = set()
+        self.write_handles = set()
         self.handle_cnt = 0
         self.raise_on_error = raise_on_error
         self.logfile = None
@@ -471,7 +472,9 @@ class SFTPServer(object):
 
     def _readdir(self, sid):
         handle, handle_id = self.consume_handle_and_id()
-        self.hook and self.hook.readdir(self, handle_id)
+        if handle_id not in self.readdir_handles:
+            self.readdir_handles.add(handle_id)
+            self.hook and self.hook.readdir(self, handle_id)
         try:
             item = next(handle)
             self.send_item(sid, item, parent_dir=self.dirs[handle_id])
