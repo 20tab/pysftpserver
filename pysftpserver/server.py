@@ -529,13 +529,13 @@ class SFTPServer(object):
         handle, handle_id = self.consume_handle_and_id()
         off = self.consume_int64()
         chunk = self.consume_string()
-        if handle_id not in self.write_handles:
-            self.write_handles.add(handle_id)
-            self.hook and self.hook.write(self, handle_id, off)
         if self.storage.write(handle, off, chunk):
             self.send_status(sid, SSH2_FX_OK)
         else:
             self.send_status(sid, SSH2_FX_FAILURE)
+        if handle_id not in self.write_handles:
+            self.write_handles.add(handle_id)
+            self.hook and self.hook.write(self, handle_id, off)
 
     def _mkdir(self, sid):
         filename = self.consume_filename()

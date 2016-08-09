@@ -150,8 +150,14 @@ class UrlRequestHook(SftpHook):
                 self.logger.info(
                     '"{}" executed. Sending request to {}.'.format(
                         method_name, url))
-            yield request(self.request_method, url, data=data,
-                          auth=self.request_auth)
+            try:
+                yield request(self.request_method, url, data=data,
+                              auth=self.request_auth)
+            except Exception as e:
+                self.logger.error(
+                    'Exception while sending request to {} ({}).'.format(
+                        url, e))
+                yield
 
     def init(self, server):
         return list(self.send_requests('init'))
