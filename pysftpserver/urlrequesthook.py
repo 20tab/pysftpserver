@@ -49,13 +49,14 @@ class UrlRequestHook(SftpHook):
 
     def __init__(self, request_url, request_method='POST', request_auth=None,
                  logfile=None, urls_mapping=None, paths_mapping=None,
-                 hashing=None, *args, **kwargs):
+                 hashing=None, extra_data=None, *args, **kwargs):
         self.request_url = request_url
         self.request_method = request_method
         self.request_auth = request_auth
         self.urls_mapping = urls_mapping or dict()
         self.paths_mapping = paths_mapping or dict()
         self.hashing = hashing
+        self.extra_data = extra_data if extra_data else {}
         if logfile:
             log_handler = logging.FileHandler(logfile)
             log_handler.setLevel(logging.DEBUG)
@@ -133,13 +134,13 @@ class UrlRequestHook(SftpHook):
             method_name (str): The name of the hook method used to get urls.
 
         Optional Args:
-            data (dict): Added data to send along with the request.
+            data (dict): Data to send along with the request.
 
         Yields:
             (Response): An instance of requests Response.
         """
-        if data is None:
-            data = {}
+        data = data if data else {}
+        data.update(self.extra_data)
         data['method'] = method_name
         filename = data.get('filename')
         if filename and os.path.isfile(filename) and self.hashing:
