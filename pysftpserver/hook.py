@@ -2,7 +2,7 @@
 actions."""
 
 
-class SftpHook(object):
+class SFTPHook(object):
     """A collection of callbacks hooked to specific methods on the server.
 
     Each method is named according to the server method to which it is

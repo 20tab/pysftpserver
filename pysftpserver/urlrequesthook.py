@@ -3,6 +3,7 @@ request (e.g. to communicate with a web API)."""
 
 from collections import Iterable
 import logging
+from six import string_types
 import os
 
 from requests import request
@@ -39,7 +40,6 @@ class UrlRequestHook(SftpHook):
         request_auth (see notes): The request method to use.
         urls_mapping (dict): Map hook method names with custom base urls.
         paths_mapping (dict): Map hook method names with optional paths.
-        hashing (callable): function to calculate file hash (default: None)
 
     Notes:
     - request_auth: this is passed as it is to the request, for further
@@ -49,13 +49,12 @@ class UrlRequestHook(SftpHook):
 
     def __init__(self, request_url, request_method='POST', request_auth=None,
                  logfile=None, urls_mapping=None, paths_mapping=None,
-                 hashing=None, extra_data=None, *args, **kwargs):
+                 extra_data=None, *args, **kwargs):
         self.request_url = request_url
         self.request_method = request_method
         self.request_auth = request_auth
         self.urls_mapping = urls_mapping or dict()
         self.paths_mapping = paths_mapping or dict()
-        self.hashing = hashing
         self.extra_data = extra_data if extra_data else {}
         if logfile:
             log_handler = logging.FileHandler(logfile)
@@ -70,44 +69,6 @@ class UrlRequestHook(SftpHook):
             self.logger = None
         super(UrlRequestHook, self).__init__(*args, **kwargs)
 
-    @staticmethod
-    def force_to_iterable(value):
-        """Force value to iterable according to the following logic:
-            - if value is a string (str or bytes), it is returned inside a
-                single element tuple;
-            - if value is an iterable, it is returned unchanged;
-            - if value is neither a string or an iterable, TypeError is raised.
-
-        Note:
-            This static method is used to make urls_mapping and paths_mapping
-            attributes flexible enough to contain single urls (str or bytes)
-            as well as iterables of urls.
-
-        Args:
-            value (str or Iterable): The value to force to iterable.
-
-        Returns:
-            (Iterable): The output iterable.
-        """
-        if isinstance(value, (str, bytes)):
-            return (value,)
-        if isinstance(value, Iterable):
-            return value
-        raise TypeError('Provided value should be a string or an iterable.')
-
-    def calculate_hash(self, filename):
-        """Calculate the hash for a file based on its content.
-
-        Args:
-            filename (str): The full path of the file whose content to hash.
-        """
-        if self.hashing:
-            hash_obj = self.hashing()
-            with open(filename, 'rb') as file_content:
-                file_buffer = file_content.read()
-                hash_obj.update(file_buffer)
-            return hash_obj.hexdigest()
-
     def get_urls(self, method_name):
         """Build a set of urls to call for a given method name, combining
         values from urls_mapping and paths_mapping.
@@ -120,10 +81,14 @@ class UrlRequestHook(SftpHook):
         Returns:
             (tuple): A tuple of urls.
         """
-        base_urls = self.force_to_iterable(
-            self.urls_mapping.get(method_name, self.request_url))
-        paths = self.force_to_iterable(
-            self.paths_mapping.get(method_name, method_name))
+        base_urls_value = self.urls_mapping.get(method_name, self.request_url)
+        base_urls = (
+            isinstance(base_urls_value, string_types) and [base_urls_value] or
+            base_urls_value)
+        paths_value = self.paths_mapping.get(method_name, method_name)
+        paths = (
+            isinstance(paths_value, string_types) and [paths_value] or
+            paths_value)
         return (os.path.join(u, p) for u in base_urls for p in paths)
 
     def send_requests(self, method_name, data=None):
@@ -142,9 +107,6 @@ class UrlRequestHook(SftpHook):
         data = data if data else {}
         data.update(self.extra_data)
         data['method'] = method_name
-        filename = data.get('filename')
-        if filename and os.path.isfile(filename) and self.hashing:
-            data['filehash'] = self.calculate_hash(filename)
         urls = self.get_urls(method_name)
         for url in urls:
             if self.logger:
