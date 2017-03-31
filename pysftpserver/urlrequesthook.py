@@ -1,17 +1,16 @@
 """This module defines a subclass of SftpHook whose methods perform a HTTP
 request (e.g. to communicate with a web API)."""
 
-from collections import Iterable
 import logging
 from six import string_types
 import os
 
 from requests import request
 
-from pysftpserver.hook import SftpHook
+from pysftpserver.hook import SFTPHook
 
 
-class UrlRequestHook(SftpHook):
+class UrlRequestHook(SFTPHook):
     """A SftpHook whose methods send a request to a specific url, containing
     the called method name and attributes.
 
