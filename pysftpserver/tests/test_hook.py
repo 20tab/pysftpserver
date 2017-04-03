@@ -5,7 +5,7 @@ import pickle
 from shutil import rmtree
 import unittest
 
-from pysftpserver.hook import SftpHook
+from pysftpserver.hook import SFTPHook
 from pysftpserver.server import (SSH2_FILEXFER_ATTR_ACMODTIME,
                                  SSH2_FILEXFER_ATTR_PERMISSIONS,
                                  SSH2_FILEXFER_ATTR_SIZE, SSH2_FXF_CREAT,
@@ -24,7 +24,7 @@ from pysftpserver.tests.utils import (get_sftphandle, sftpcmd, sftpint,
                                       sftpint64, sftpstring, t_path)
 
 
-class TestHook(SftpHook):
+class TestHook(SFTPHook):
 
     def __init__(self, code_length=6, *args, **kwargs):
         self._results = dict()

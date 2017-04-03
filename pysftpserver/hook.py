@@ -1,4 +1,4 @@
-"""The SftpHook interface allows to define custom reactions to SftpServer
+"""The SFTPHook interface allows to define custom reactions to SFTPServer
 actions."""
 
 

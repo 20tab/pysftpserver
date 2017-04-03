@@ -1,4 +1,4 @@
-"""This module defines a subclass of SftpHook whose methods perform a HTTP
+"""This module defines a subclass of SFTPHook whose methods perform a HTTP
 request (e.g. to communicate with a web API)."""
 
 import logging
@@ -11,7 +11,7 @@ from pysftpserver.hook import SFTPHook
 
 
 class UrlRequestHook(SFTPHook):
-    """A SftpHook whose methods send a request to a specific url, containing
+    """A SFTPHook whose methods send a request to a specific url, containing
     the called method name and attributes.
 
     In principle, each method of the hook may call a different set of urls,
@@ -48,7 +48,7 @@ class UrlRequestHook(SFTPHook):
 
     def __init__(self, request_url, request_method='POST', request_auth=None,
                  logfile=None, urls_mapping=None, paths_mapping=None,
-                 extra_data=None, *args, **kwargs):
+                 extra_data=None):
         self.request_url = request_url
         self.request_method = request_method
         self.request_auth = request_auth
@@ -66,7 +66,6 @@ class UrlRequestHook(SFTPHook):
             self.logger.addHandler(log_handler)
         else:
             self.logger = None
-        super(UrlRequestHook, self).__init__(*args, **kwargs)
 
     def get_urls(self, method_name):
         """Build a set of urls to call for a given method name, combining
